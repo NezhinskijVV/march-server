@@ -1,3 +1,5 @@
+import dao.ClientDAO;
+import dao.ClientDAOImpl;
 import domain.Client;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -12,6 +14,7 @@ public class ClientEntity implements Runnable, Observer {
     private final Socket socket;
     private final MyServer myServer;
     private final Client user = new Client();
+    private final ClientDAO clientDAO = new ClientDAOImpl();
 
     @SneakyThrows
     @Override
@@ -23,9 +26,14 @@ public class ClientEntity implements Runnable, Observer {
             if (messageFromClient.startsWith("!@#REGISTRATION%^*!")) {
                 String[] logAndPass = messageFromClient.substring(19).split("::");
                 System.out.println(logAndPass[0] + " " + logAndPass[1]);
-                user.setLogin(logAndPass[0]);
-                user.setPassword(logAndPass[1]);
-                myServer.registerObserver(this);
+                Client client = clientDAO.getClientByLogin(logAndPass[0]);
+
+                if (client != null) {
+//                user.setLogin(logAndPass[0]);
+//                user.setPassword(logAndPass[1]);
+                    System.out.println("Success");
+                    myServer.registerObserver(this);
+                }
             } else {
                 System.out.println(messageFromClient);
                 myServer.notifyObservers(messageFromClient);
